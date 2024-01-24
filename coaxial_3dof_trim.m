@@ -172,7 +172,7 @@ for i = 1:length(u_vals)
     C_T_Glau_u(i) = lambda_i_u_mean(i) * sqrt(mu(i)^2+(mu_z(i)+lambda_i_u_mean(i))^2);
     C_T_Glau_l(i) = 2*lambda_i_l_mean(i) * sqrt(mu(i)^2+(mu_z(i)-lambda_i_l_mean(i)+lambda_i_u_mean(i))^2);
     C_T_BEM_u(i) = 1/4*c_l_a*sigma*(2/3*x_k(1,i)*(1+3/2*mu(i)^2)-(lambda_c(i)+x_k(4,i)));
-    C_T_BEM_l(i) = 1/4*c_l_a*sigma*(2/3*x_k(2,i)*(1+3/2*mu(i)^2)-(lambda_c(i)+2*x_k(4,i)));
+    C_T_BEM_l(i) = 1/4*c_l_a*sigma*(2/3*x_k(2,i)*(1+3/2*mu(i)^2)-(lambda_c(i)+x_k(4,i)));
 
     T_u(i) = C_T_BEM_u(i) * rho * (Omega*R)^2 * pi*R^2;
     T_l(i) = C_T_BEM_l(i) * rho * (Omega*R)^2 * pi*R^2;
@@ -201,28 +201,43 @@ end
 
 %%
 figure(1)
-plot(V, rad2deg(x_k(1,:)), '-*', V, rad2deg(x_k(2,:)), '-*', V, rad2deg(x_k(3,:)), '-*'),grid;
+plot(mu, rad2deg(x_k(1,:)), '-*', mu, rad2deg(x_k(2,:)), '-*', mu, rad2deg(x_k(3,:)), '-*'),grid;
 % ylim([-5, 30])
-legend('theta_0_u', 'theta_0_l', 'theta_c')
+legend('theta_0_u', 'theta_0_l', 'theta_c'); xlabel("Advance Ratio \mu [-]")
 
 %%
 figure(2)
-plot(V, lambda_i_u_mean, V, lambda_i_l_mean,V,lambda_c),grid
-legend('lambda i u mean', 'lambda i l mean', 'lambda c')
+plot(mu, lambda_i_u_mean, mu, lambda_i_l_mean,mu,lambda_c),grid
+legend('lambda i u mean', 'lambda i l mean', 'lambda c'); xlabel("Advance Ratio \mu [-]")
 
 %%
 figure(3)
-plot(V, C_T_Glau_u, '-*', V, C_T_Glau_l, V, C_T_BEM_u, V, C_T_BEM_l),grid
-legend('CT Glau lower', 'CT Glau lower', 'CT BEM upper', 'CT BEM lower')
+plot(mu, C_T_Glau_u, '-*', mu, C_T_Glau_l, mu, C_T_BEM_u, mu, C_T_BEM_l),grid
+legend('CT Glau lower', 'CT Glau lower', 'CT BEM upper', 'CT BEM lower'); xlabel("Advance Ratio \mu [-]")
 
-%%
 figure(4)
-plot(V, T_u/g, V, T_l/g),grid
-legend('T upper [kg]', 'T lower [kg]')
+plot(V, C_T_Glau_u, '-*', V, C_T_Glau_l, V, C_T_BEM_u, V, C_T_BEM_l),grid
+legend('CT Glau lower', 'CT Glau lower', 'CT BEM upper', 'CT BEM lower'); xlabel("Advance Ratio \mu [-]")
 
 %%
 figure(5)
-plot(V, lambda_0_u_dot)
+plot(mu, T_u/g, mu, T_l/g),grid
+legend('T upper [kg]', 'T lower [kg]'); xlabel("Advance Ratio \mu [-]")
+
+figure(6)
+plot(V, T_u/g, V, T_l/g),grid
+legend('T upper [kg]', 'T lower [kg]'); xlabel("Speed V [-]")
+
+% IMPORTANT --- SPEED AND ADVANCE RATIO GIVE DIFFERENT RESULTS FOR LOWER
+% ROTOR????
+
+%%
+figure(7)
+plot(V, rad2deg(a_1_u))
+legend("a 1"); xlabel("Advance Ratio \mu [-]")
+
+% vi_lst = sqrt(-V_lst.^2/2 + sqrt(V_lst.^4/4+1));
+
 
 
     
