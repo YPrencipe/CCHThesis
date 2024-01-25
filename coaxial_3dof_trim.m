@@ -5,8 +5,8 @@
 % Author:       Ynias Prencipe 
 % Student Nr.:  4777158
 % 
-% Description:  Trim algorithm for the coaxial helicopter, no pusher prop or
-% elevator added yet
+% Description:  Trim using the Newton-Rhapson algorithm for the coaxial 
+% helicopter, no pusher prop or elevator added yet
 % 
 % Assumptions:  - Uniform inflows on both upper and lower rotors
 %               - Upper rotor inflow is fully added to lower rotor inflow
