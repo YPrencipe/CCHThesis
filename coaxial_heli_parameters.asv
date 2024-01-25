@@ -34,8 +34,8 @@ N_l = 5;
 sigma = N_u*c*R/(pi*R^2);
 lock = 5.41;                % Su et al. 2023
 Vmax = 120;                 % [m/s]
-h_l = 0.89;                 % Shaft spacing upper rotor - Su et al. 2023   
-h_u = h_l + 0.77;           % Shaft spacing lower rotor - Su et al. 2023
+h_l = 0.89;                 % Shaft spacing upper rotor -    
+h_u = h_l + 0.77;   
 
 % Main rotor Airfoil Data
 c = 0.257;                  % blade chord [m]
