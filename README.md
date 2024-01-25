@@ -19,10 +19,12 @@ Main Files
 - coaxial_heli_parameters.m
 	- Description: Defines the helicopter parameters
 	- Dependencies:
-		NONE
+		- NONE
 
-Files Used for Manual Calculations
+Files Used for Manual Calculations:
 -----------------------------------
+
+
 
 
 Data Files:
