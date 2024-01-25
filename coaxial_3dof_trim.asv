@@ -87,15 +87,15 @@ for i = 1:length(u_vals)
     vel(:,i) = [u(i); w(i); V(i); mu(i); mu_x(i); mu_z(i)];
 
     %%
-    % % Define Polar Coordinates
-    % psi_values = 0:deg2rad(1):2*pi;
-    % r_values = 0:0.01:R;
-    % [r, psi] = meshgrid(r_values, psi_values);
-    % % Include Uniform (upper)/Linear (Lower) Inflow Distributions
-    % ksi(i) = atan(mu_x(i)/(mu_z(i)+x_k(4,i)));
-    % k_x = 15*pi/32 * tan(ksi(i)/2);        % Pitt and Peters estimates for k_x and k_y
-    % k_y = 0;
-    % 
+    % Define Polar Coordinates
+    psi_values = 0:deg2rad(1):2*pi;
+    r_values = 0:0.01:R;
+    [r, psi] = meshgrid(r_values, psi_values);
+    % Include Uniform (upper)/Linear (Lower) Inflow Distributions
+    ksi(i) = atan(mu_x(i)/(mu_z(i)+x_k(4,i)));
+    k_x = 15*pi/32 * tan(ksi(i)/2);        % Pitt and Peters estimates for k_x and k_y
+    k_y = 0;
+
     % % Interference Effects -- omitted for now due to numerical errors
     % if (0<=mu(i)) && (mu(i)<= 0.316)
     %     delta_l2u = -2.15*mu(i) + 0.68;
@@ -120,10 +120,9 @@ for i = 1:length(u_vals)
     % lambda_i_u_mean(i) = mean(lambda_i_u, "all");
     % lambda_i_l_mean(i) = mean(lambda_i_l, "all");
 
-    % Mean inflows and forward flight inflow component
+    % Mean inflows
     lambda_i_u_mean(i) = x_k(4,i);      % Equal to the upper rotor mean inflow lambda_0_u
     lambda_i_l_mean(i) = 2*x_k(4,i);    % Double the upper rotor inflow
-    lambda_c(i) = V(i)/(Omega*R) * sin(alfa_c(i));
 
     inflow(:,i) = [lambda_c(i); x_k(4,i); lambda_i_u_mean(i); lambda_i_l_mean(i)];
 
@@ -131,12 +130,10 @@ for i = 1:length(u_vals)
     count(i) = 1;
     f_sum(1) = 10;
 
-
-    % Newton-Rhapson Trim Algorithm 
     while f_sum(count(i)) > 0.001
 
         count(i) = count(i)+1;
-        tistep = deg2rad(0.1);          % small increment for Newton-Rhapson
+        tistep = deg2rad(0.1);
 
         % calculate f(:,i) using x_k
         x_ki(:,i) = x_k(:,i);
@@ -182,8 +179,6 @@ for i = 1:length(u_vals)
     end
     Jac
 
-    % Defining the final calculated values, not necessary for trim but nice
-    % for analysis and debugging purposes
     lambda_i_u_mean(i) = x_k(4,i);
     lambda_i_l_mean(i) = 2*x_k(4,i);
 
@@ -203,7 +198,9 @@ for i = 1:length(u_vals)
     qdot(i) = -(T_u(i)*sin(x_k(3,i)-a_1_u(i))*0.89+T_l(i)*sin(x_k(3,i)-a_1_l(i))*(0.89+0.77))/Iyy;
     thetadot(i) = q(i);
 
-    lambda_0_u_dot(i) = (C_T_BEM_u(i)-C_T_Glau_u(i))/0.1; % Quasi-Dynamic Inflow
+    % Quasi-Dynamic Inflow
+    lambda_0_u_dot(i) = (C_T_BEM_u(i)-C_T_Glau_u(i))/0.1;
+    
 
     % Euler Integration
     w(i+1) = 0;
@@ -211,9 +208,10 @@ for i = 1:length(u_vals)
     theta(i+1) = 0;
     % lambda_0_u(i+1) = lambda_0_u(i)+dt*labidot_u(i);
 
+
+
 end
 
-% PLOTTING
 %%
 figure(1)
 plot(mu, rad2deg(x_k(1,:)), '-*', mu, rad2deg(x_k(2,:)), '-*', mu, rad2deg(x_k(3,:)), '-*'),grid;
