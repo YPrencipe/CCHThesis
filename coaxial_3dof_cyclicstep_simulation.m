@@ -20,14 +20,14 @@ t(1)=0;
 u(1)=0;
 w(1)=0;
 q(1)=0;
-theta(1)=deg2rad(-4);
+theta(1)=deg2rad(0.01);
 x(1)=0;
 lambda_0_u(1)=sqrt(mass/2*abs(g)/(area*2*rho))/(Omega*R);
 z(1)=0;
 
 % Time Paramaters
 simN = 400;
-tEnd = 40;
+tEnd = 15;
 dt = (tEnd-t(1))/simN;
 tau = 0.1;
 
@@ -39,7 +39,7 @@ Ki_c = 0.4;
 for i = 1:simN
 
     % Cyclic step input of 1deg between t=0.5 and t=1s
-    if t(i) >= 0.5 & t(i) <= 1 
+    if t(i) >= 2 & t(i) <= 3 
        theta_c(i)=deg2rad(1);%longit cyclic input
     else 
        theta_c(i)=deg2rad(0);
@@ -51,26 +51,28 @@ for i = 1:simN
 
     e_s(i) = z_des - height(i);
 
-    if t(i)>=3
-        theta_0_u_deg(i) = 0 + KaltP*(e_s(i)) + Ki_c*cumtrapz(e_s(i)); %+ KaltD*c(i) + Ki_c*(e_s(i)*dt) ;
-        % theta_0_u_deg(i) = 0 + 0.2*w(i) + 0.2*wdot(i-1);
-        theta_0_u(i) = deg2rad(theta_0_u_deg(i));
+    % if t(i)>=10
+    %     theta_0_u_deg(i) = 0 + KaltP*(e_s(i)) + Ki_c*cumtrapz(e_s(i)); %+ KaltD*c(i) + Ki_c*(e_s(i)*dt) ;
+    %     % theta_0_u_deg(i) = 0 + 0.2*w(i) + 0.2*wdot(i-1);
+    %     theta_0_u(i) = deg2rad(theta_0_u_deg(i));
+    % 
+    %     theta_0_l_deg(i) = 0 + KaltP*(e_s(i)) + Ki_c*cumtrapz(e_s(i)); %+ KaltD*c(i) + Ki_c*(e_s(i)*dt) ;
+    %     % theta_0_l_deg(i) = 0 + 0.2*w(i) + 0.2*wdot(i-1);
+    %     theta_0_l(i) = deg2rad(theta_0_l_deg(i));
+    % else
+    %     theta_0_u(i)=theta_0_u(1);
+    %     theta_0_l(i)=theta_0_l(1);
+    % end
+    theta_0_u(i)=theta_0_u(1);
+    theta_0_l(i)=theta_0_l(1);
 
-        theta_0_l_deg(i) = 0 + KaltP*(e_s(i)) + Ki_c*cumtrapz(e_s(i)); %+ KaltD*c(i) + Ki_c*(e_s(i)*dt) ;
-        % theta_0_l_deg(i) = 0 + 0.2*w(i) + 0.2*wdot(i-1);
-        theta_0_l(i) = deg2rad(theta_0_l_deg(i));
-    else
-        theta_0_u(i)=theta_0_u(1);
-        theta_0_l(i)=theta_0_l(1);
-    end
-    % theta_0_u(i)=theta_0_u(1);
-    % theta_0_l(i)=theta_0_l(1);
+    % if t(i)>=10
+    %     theta_c(i) = 0.2*theta(i) + 0.1*q(i);
+    % else
+    %     theta_c(i)=theta_c(1);
+    % end
 
-    if t(i)>=2
-        theta_c(i) = 0.2*theta(i) + 0.1*q(i);
-    else
-        theta_c(i)=theta_c(1);
-    end
+    
     
     % Calculate Parameters
     if u(i)==0 	
@@ -178,6 +180,13 @@ end
 figure(1)
 plot(t,rad2deg(theta), t,u,t(1:end-1),udot),grid;
 legend('theta_f', 'u')
+figure(1)
+subplot(3,1,1)
+plot(t(1:end-1),rad2deg(theta_c)), grid, legend('theta c');
+subplot(3,1,2)
+plot(t,rad2deg(theta)), grid, legend('theta f');
+subplot(3,1,3)
+plot(t,u,t(1:end-1),udot), grid, legend('u', 'udot');
 
 % figure()
 % plot(t(1:end-1), lambda_i_u_mean, t(1:end-1), lambda_i_l_mean)

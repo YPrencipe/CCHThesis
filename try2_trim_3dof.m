@@ -21,6 +21,9 @@
 %               - Elevator + Horizontal Stabilizer / Stabilator
 %               ? Wake contraction effects
 %               ? Rotor interference factor in function of advance ratio
+%               - take into account the flight envelope in which this works
+%               , look at momentum theory definitions for the regions
+%               (especially descent etc.] for which its not valid anymore
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -31,45 +34,47 @@ clear; clc; close all;
 coaxial_heli_parameters;
 
 % Initial Values
-theta_0_u(1) = deg2rad(1);
-theta_0_l(1) = deg2rad(1);
-theta_c(1) = deg2rad(1);
+theta_0(1) = deg2rad(0);
+% d_theta_0(1) = deg2rad(0.1); not needed in 3dof , only for 6dof for yaw
+% stability
+theta_c(1) = deg2rad(0);
+theta(1)=deg2rad(1);
+theta_p(1) = deg2rad(0);
 t(1)=0;
 u(1)=0;
 w(1)=0;
 q(1)=0;
-theta(1)=deg2rad(0);
 lambda_0_u(1)=sqrt(mass*abs(g)/(area*2*rho))/(Omega*R);
 vi_hov = sqrt(1/2*mass*g/(2*rho*pi*R^2));
 
 % Define speed vector
-u_vals = [0.1, 1,2,3,4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
-% u_vals = 0.1:80;
+V_vals = [0.1, 1,2,3,4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, ...
+    70, 75, 80, 85, 90, 95, 100, 105, 110];
+% V_vals = 0.1:80;
 
 % Define trim variable vector
-x_k = zeros(4,length(u_vals));
-x_k(:,1) = [theta_0_u(1); theta_0_l(1); theta_c(1); lambda_0_u(1)];
+x_k = zeros(4,length(V_vals));
+x_k(:,1) = [theta_0(1); theta_p(1); theta_c(1); lambda_0_u(1)];
 
 
 %% Trim Routine
 
-for i = 1:length(u_vals)
+for i = 1:length(V_vals)
     i
-    u(i) = u_vals(i);   % cycling through each speed defined in the speed range vector u_vals
-    w(i) = 0;           % w set to 0 during trim procedure
-    theta(i) = 0;       % fix theta_fuselage to 0 for all flightspeeds for trimming purposes
+    V(i) = V_vals(i);
+    u(i) = V(i)*cos(atan2(w(i),u(i)));
+    w(i) = V(i)*sin(atan2(w(i),u(i)));
 
     if i>1
         x_k(:,i) = x_k(:,i-1);      % initial guess of each trim iteration is the previous trim state - for quick convergence
     end
    
     % Calculate Angles
-    alfa_sp = atan2(w(i),u(i));
-    alfa_cp(i) = x_k(3,i) - alfa_sp;
+    alfa_sp(i) = atan2(w(i),u(i));
+    alfa_cp(i) = x_k(3,i) - alfa_sp(i);
 
     % Speed variables
-    V(i) = sqrt(u(i)^2+w(i)^2);
-    mu(i) = V(i)/(Omega*R) * cos(alfa_cp(i));
+    mu(i) = V(i)/(Omega*R);
     mu_x(i) = V(i)/(Omega*R) * cos(alfa_cp(i));
     mu_z(i) = V(i)/(Omega*R) * sin(alfa_cp(i));
     vel(:,i) = [u(i); w(i); V(i); mu(i); mu_x(i); mu_z(i)];
@@ -128,31 +133,31 @@ for i = 1:length(u_vals)
 
         % calculate f(:,i) using x_k
         x_ki(:,i) = x_k(:,i);
-        f(:,i) = f_xk(vel(:,i), x_ki(:,i), inflow(:,i), q(i), theta(i));
+        f(:,i) = f_xk(vel(:,i), x_ki(:,i), inflow(:,i), q(i));
 
         % calculate x_k+1 for perturbation in x(1,i)
         ti1 = [tistep; 0; 0; 0];
         x_k1(:,i) = x_ki(:,i) + ti1;
         % calculate f_xk1_ti(:,i) using x_k+1 for FIRST column of jacobian
-        f_xk1_ti(:,i) = f_xk(vel(:,i), x_k1(:,i), inflow(:,i), q(i), theta(i));
+        f_xk1_ti(:,i) = f_xk(vel(:,i), x_k1(:,i), inflow(:,i), q(i));
 
         % calculate x_k+1 for perturbation in x(2,i)
         ti2 = [0; tistep; 0; 0];
         x_k2(:,i) = x_ki(:,i) + ti2;
         % calculate f_xk2_ti(:,i) using x_k+1 for SECOND column of jacobian
-        f_xk2_ti(:,i) = f_xk(vel(:,i), x_k2(:,i), inflow(:,i), q(i), theta(i));
+        f_xk2_ti(:,i) = f_xk(vel(:,i), x_k2(:,i), inflow(:,i), q(i));
         
         % calculate x_k+1 for perturbation in x(3,i)
         ti3 = [0; 0; tistep; 0];
         x_k3(:,i) = x_ki(:,i) + ti3;
         % calculate f_xk_ti(:,i) using x_k+1 for THIRD column of jacobian
-        f_xk3_ti(:,i) = f_xk(vel(:,i), x_k3(:,i), inflow(:,i), q(i), theta(i));
+        f_xk3_ti(:,i) = f_xk(vel(:,i), x_k3(:,i), inflow(:,i), q(i));
 
         % calculate x_k+1 for perturbation in x(3,i)
-        ti4 = [0; 0; 0; 0.001];
+        ti4 = [0; 0; 0; tistep];
         x_k4(:,i) = x_ki(:,i) + ti4;
         % calculate f_xk_ti(:,i) using x_k+1 for THIRD column of jacobian
-        f_xk4_ti(:,i) = f_xk(vel(:,i), x_k4(:,i), inflow(:,i), q(i), theta(i));
+        f_xk4_ti(:,i) = f_xk(vel(:,i), x_k4(:,i), inflow(:,i), q(i));
         
         % assemble all 3 columns for Jacobian
         ti = [tistep; tistep; tistep; 0.001];
@@ -163,66 +168,69 @@ for i = 1:length(u_vals)
         x_k(:,i) = x_ki(:,i) - inv(Jac) * f(:,i);
 
         % f(:,i)
-        f(:,i) = f_xk(vel(:,i), x_k(:,i), inflow(:,i), q(i), theta(i));
+        f(:,i) = f_xk(vel(:,i), x_k(:,i), inflow(:,i), q(i));
 
         f_sum(count(i)) = sum(abs(f(:,i)),"all");
         
         
 
-        % f(:,i) = f_xk(vel(:,i), x_k(:,i), inflow(:,i), q(i), theta(i));
+        % f(:,i) = f_xk(vel(:,i), x_k(:,i), inflow(:,i), q(i));
 
     end
     Jac
 
     % Defining the final calculated values, not necessary for trim but nice
     % for analysis and debugging purposes
-
+    lambda_i_l(i) = ( 1 + (-3.81*mu(i) + 1.45) ) * x_k(4,i);
     C_T_Glau_u(i) = x_k(4,i) * sqrt(mu(i)^2+(mu_z(i)+x_k(4,i))^2);
-    C_T_Glau_l(i) = 2*x_k(4,i) * sqrt(mu(i)^2+(mu_z(i)-2*x_k(4,i)+x_k(4,i))^2);
+    C_T_Glau_l(i) = 2*x_k(4,i) * sqrt(mu(i)^2+(mu_z(i)-lambda_i_l(i)+x_k(4,i))^2);
     C_T_BEM_u(i) = 1/4*c_l_a*sigma*(2/3*x_k(1,i)*(1+3/2*mu(i)^2)-(lambda_c(i)+x_k(4,i)));
-    C_T_BEM_l(i) = 1/4*c_l_a*sigma*(2/3*x_k(2,i)*(1+3/2*mu(i)^2)-(lambda_c(i)+x_k(4,i)));
-    % C_T_BEM_u(i) = 1/4*c_l_a*sigma*(2/3*x_k(1,i)*(1+3/2*mu_x(i)^2)+(mu_z(i)-x_k(4,i))/2);
-    % C_T_BEM_l(i) = 1/4*c_l_a*sigma*(2/3*x_k(2,i)*(1+3/2*mu_x(i)^2)+(mu_z(i)-2*x_k(4,i))/2);
-
+    
+    C_T_BEM_l(i) = 1/4*c_l_a*sigma*(2/3*x_k(1,i)*(1+3/2*mu(i)^2)-(lambda_c(i)+lambda_i_l(i)));
 
     T_u(i) = C_T_BEM_u(i) * rho * (Omega*R)^2 * pi*R^2;
-    T_l(i) = C_T_BEM_l(i) * rho * (Omega*R)^2 * pi*R^2;
+    T_l(i) = ( 1 + (-3.81*mu_x(i) + 1.45) ) * T_u(i);
 
     a_1_u(i) = (8/3*mu_x(i)*x_k(1,i) - 2*mu_x(i)*(lambda_c(i)+x_k(4,i)) - 16/lock*q(i)/Omega) / (1-1/2*mu_x(i)^2);
-    a_1_l(i) = (8/3*mu_x(i)*x_k(2,i) - 2*mu_x(i)*(lambda_c(i)+2*x_k(4,i)) - 16/lock*q(i)/Omega) / (1-1/2*mu_x(i)^2);
-    % a_1_l(i) = a_1_u(i);
-    % a_1_u(i) = x_k(3,i);
-    % a_1_l(i) = x_k(3,i);
+    a_1_l(i) = (8/3*mu_x(i)*x_k(1,i) - 2*mu_x(i)*(lambda_c(i)+2*x_k(4,i)) - 16/lock*q(i)/Omega) / (1-1/2*mu_x(i)^2);
 
-
-    udot(i) = -g*sin(theta(i)) - CDS/mass*0.5*rho*u(i)*V(i) + (T_u(i)*sin(x_k(3,i)-a_1_u(i))+T_l(i)*sin(x_k(3,i)-a_1_l(i)))/mass - q(i)*w(i);
-    wdot(i) = g*cos(theta(i)) - CDS/mass*0.5*rho*w(i)*V(i) - (T_u(i)*cos(x_k(3,i)-a_1_u(i))+T_l(i)*cos(x_k(3,i)-a_1_l(i)))/mass + q(i)*u(i);
-    qdot(i) = -(T_u(i)*sin(x_k(3,i)-a_1_u(i))*0.89+T_l(i)*sin(x_k(3,i)-a_1_l(i))*(0.89+0.77))/Iyy;
-    thetadot(i) = q(i);
-
-    lambda_0_u_dot(i) = (C_T_BEM_u(i)-C_T_Glau_u(i))/0.1; % Quasi-Dynamic Inflow
+    udot(i) = f(1,i);
+    wdot(i) = f(2,i);
+    qdot(i) = f(3,i);
+    lambda_0_u_dot(i) = f(4,i);
 
     % Euler Integration
-    w(i+1) = 0;
+    u(i+1) = V(i)*cos(atan2(w(i),u(i)));
+    w(i+1) = V(i)*sin(atan2(w(i),u(i)));
     q(i+1) = 0;
-    theta(i+1) = 0;
-    % lambda_0_u(i+1) = lambda_0_u(i)+dt*labidot_u(i);
+
+    Drag(i) = 1/2*rho*V(i)^2*CDS;
+
+    Tp_des(i) = 0.5 * Drag(i);   % prop accounts for 50% of drag produced by heli
+    CTp(i) = Tp_des(i) / (rho * (Omega*R)^2 * pi*R^2);
+    lambda_p(i) = sqrt(CTp(i)/2);
+
+    CTp(i) = 1/2*sigma*C_l_p*(x_k(2,i)/3 - lambda_p(i)/2);
+    T_p(i) = CTp(i) * (rho * (Omega*R)^2 * pi*R^2);
 
 end
+
+theta_0_mean = 2*x_k(1,:);  % Multiply the collective of upper by 2 because
+                            % the lower one also has the same theta
 
 % PLOTTING
 %%
 figure(1)
-plot(mu, rad2deg(x_k(1,:)), '-*', mu, rad2deg(x_k(2,:)), '-*', mu, rad2deg(x_k(3,:)), '-*'),grid;
+plot(mu, rad2deg(theta_0_mean), '-*', mu, rad2deg(x_k(2,:)), '-*', mu, rad2deg(x_k(3,:)), '-*'),grid;
 % ylim([-5, 30])
-legend('theta_0_u', 'theta_0_l', 'theta_c'); xlabel("Advance Ratio \mu [-]")
+legend('\theta_0', '\theta f', '\theta_c', 'Location', 'southwest'); xlabel("Advance Ratio \mu [-]")
 
 %%
 figure(2)
 plot(mu, x_k(4,:), mu, 2*x_k(4,:),mu,lambda_c, ...
     mu, sqrt(-V.^2/2 + sqrt((V.^2/2).^2 + vi_hov^4))/(Omega*R), ...
     mu, 2*sqrt(-V.^2/2 + sqrt((V.^2/2).^2 + vi_hov^4))/(Omega*R) ),grid
-legend('lambda i u mean', 'lambda i l mean', 'lambda c'); xlabel("Advance Ratio \mu [-]")
+legend('lambda i u mean', 'lambda i l mean', 'lambda c', '^4 upper', '^4 lower'); xlabel("Advance Ratio \mu [-]")
 
 %%
 % figure(3)
@@ -230,8 +238,8 @@ legend('lambda i u mean', 'lambda i l mean', 'lambda c'); xlabel("Advance Ratio 
 % legend('CT Glau lower', 'CT Glau lower', 'CT BEM upper', 'CT BEM lower'); xlabel("Advance Ratio \mu [-]")
 
 figure(4)
-plot(V, C_T_Glau_u, '-*', V, C_T_Glau_l, V, C_T_BEM_u, V, C_T_BEM_l),grid
-legend('CT Glau upper', 'CT Glau lower', 'CT BEM upper', 'CT BEM lower'); xlabel("Advance Ratio \mu [-]")
+plot(V, C_T_Glau_u, '-*', V, C_T_Glau_l, V, C_T_BEM_u, V, C_T_BEM_l, V, CTp),grid
+legend('CT Glau upper', 'CT Glau lower', 'CT BEM upper', 'CT BEM lower', 'C T Prop'); xlabel("Advance Ratio \mu [-]")
 
 %%
 % figure(5)
@@ -247,8 +255,10 @@ legend('T upper [kg]', 'T lower [kg]'); xlabel("Speed V [-]")
 
 %%
 figure(7)
-plot(V, rad2deg(a_1_u),V, rad2deg(a_1_l))
-legend("a 1 u", "a 1 l "), grid
+plot(mu, rad2deg(a_1_u), '--', mu, rad2deg(a_1_l), '--', ...
+    mu, rad2deg(alfa_cp), '-*', mu, rad2deg(alfa_sp), '-*', ...
+    mu, rad2deg(x_k(3,:)), '-o')
+legend("a 1 u", "a 1 l ", "\alpha_{dp}", "\alpha_{sp}", "\theta_c", 'Location', 'northwest'), grid
 % xlabel("Advance Ratio \mu [-]")
 
     

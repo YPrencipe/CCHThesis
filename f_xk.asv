@@ -241,8 +241,8 @@ function f_xki_ti = f_xk(vel, x_k, inflow, q, flapping, theta_f)
 
     % Thrust using BEM 
     T_u = C_T_BEM_ui * rho * (Omega*R)^2 * pi*R^2;
-    % T_l = C_T_BEM_li * rho * (Omega*R)^2 * pi*R^2;
-    T_l = 2*T_u;
+    T_l = C_T_BEM_li * rho * (Omega*R)^2 * pi*R^2;
+    % T_l = 2*T_u;
 
     % Pusher Propeller Model
     alfa_sp_p = atan2(w,u);
@@ -261,13 +261,13 @@ function f_xki_ti = f_xk(vel, x_k, inflow, q, flapping, theta_f)
 
     %% Equations of Motion
     udot = -g*sin(theta_f) - 0.5*rho*u*V*CDS/mass ...
-        + (T_u*sin(a1r_u+i_theta)+T_l*sin(a1r_l+i_theta))/mass - q*w + Tp/mass ...
-        - (Hdp_u*cos(a1r_u+i_theta)+Hdp_l*cos(a1r_l+i_theta))/mass;
+        + (T_u*sin(a1r_u+i_theta)+T_l*sin((a1r_l+i_theta)))/mass - q*w + Tp/mass ...
+        - (Hdp_u*cos(a1r_u+i_theta)+Hdp_l*cos((a1r_l+i_theta)))/mass;
     wdot = g*cos(theta_f) - 0.5*rho*w*V*CDS/mass ...
-        - (T_u*cos(a1r_u+i_theta)+T_l*cos(a1r_l+i_theta))/mass + q*u - L_h/mass ...
-        - (Hdp_u*sin(a1r_u+i_theta)+Hdp_l*sin(a1r_l+i_theta))/mass;
-    qdot = (-(T_u*sin(a1r_u+i_theta)*0.89+T_l*sin(a1r_l+i_theta)*(0.89+0.77)) - L_h*l_h - ...
-        (T_u*cos(a1r_u+i_theta)*0.0+T_l*cos(a1r_l+i_theta)*0.0)) / Iyy ;
+        - (T_u*cos(a1r_u+i_theta)+T_l*cos((a1r_l+i_theta)))/mass + q*u - L_h/mass ...
+        - (Hdp_u*sin(a1r_u+i_theta)+Hdp_l*sin((a1r_l+i_theta)))/mass;
+    qdot = (-(T_u*sin(a1r_u+i_theta)*0.89+T_l*sin((a1r_l+i_theta))*(0.89+0.77)) - L_h*l_h - ...
+        (T_u*cos(a1r_u+i_theta)*0.0+T_l*cos((a1r_l+i_theta))*0.0)) / Iyy ;
     
     lambda_0_u_dot = (C_T_BEM_ui-C_T_Glau_ui)/0.1;
     lambda_p_dot = (C_T_BEM_p-C_T_Glau_p)/0.1;
