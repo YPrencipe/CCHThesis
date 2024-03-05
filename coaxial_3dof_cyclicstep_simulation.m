@@ -11,6 +11,7 @@ clear; clc; close all;
 
 % Load coaxial helicopter parameters
 coaxial_heli_parameters;
+Omega = 40;
 
 % Initial Values
 theta_0_u(1) = deg2rad(6);
