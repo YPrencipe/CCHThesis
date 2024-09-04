@@ -43,6 +43,5 @@ Main Files
 
 Contact Details
 ----------------
-Name:			Ynias J.E. Prencipe 
-Prefered e-mail: 	ynias.prencipe1999@gmail.com
-Phone Number:		+32 487 53 72 48
+- Name:			Ynias J.E. Prencipe 
+- Prefered e-mail: 	ynias.prencipe1999@gmail.com
