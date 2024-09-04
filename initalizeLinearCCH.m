@@ -2,7 +2,7 @@
 
 clc; close all; clear;
 
-v_kts = 55;
+v_kts = 40;
 
 load('TrimLinSave.mat'); load('V_transit_save.mat');
 
@@ -22,12 +22,12 @@ ii = find(vv == kias_s);
 tlr = TrimLinSave(ii, :);
 
 AA = tlr{1};
-BB = tlr{2};
+BB = tlr{2};    % collective, LonCyc, PushProp, Elev
 CC = tlr{3};
 DD = tlr{4};
 
 % Find Correct Stability and Control Derivatives according to speed var ii
-M_theta_c = BB(3,2);
+M_theta_s = BB(3,2);
 M_delta_e = BB(3,4);
 
 % CA Stuff
@@ -38,6 +38,9 @@ V_u_transit = V_transit_save(2);
 Kp_pitch = -50;
 Ki_pitch = -50;
 Kd_pitch = 33.3;
+
+
+
 
 
 

@@ -11,8 +11,6 @@
 % 
 % To Add:       - 
 %
-% Comments:     - The current values are from an H145D3 helicopter for easy
-%               verification using an old helicopter course assignment
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -22,6 +20,7 @@ tau = 0.1;
 % Schedules
 V_vals = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, ...
     70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125];
+V_vals_kts = V_vals.*1.944;
 theta_f_trim = deg2rad([4.8, 4.8, 4.5, 4.3, 4, 3.8, 3.7, 3.5, 3.3, 3, 2.5, 2, 1.5, 1, ...
     0.5, 0 ,-0.5, -1 ,-1.5 ,-2.5, -2.5]);
 
@@ -37,12 +36,13 @@ z_cg = 0;
 % General Planform Data
 mass = 5500;                % Su et al. 2023
 W = mass*g;
-Ixx = 3400;
-Ixz = 2500;
-Iyy = 16000;                % educated guess 
+Ixx = 6800;
+Ixz = 5000;
+Iyy = 40000;                % educated guess 
 Izz = 12000;
 CDS = 1.9;                  % Cd * S - guess from graph in report heli course assignment
-Omega = 35;              % [rad/s] Su et al. 2023
+% Omega = 40;              % [rad/s] Su et al. 2023
+Omega = 35;
 R = 5.49;                    % Su et al. 2023
 diam = 2*R;
 area = pi/4*diam^2;
@@ -52,7 +52,8 @@ lock = 6.57;                % Su et al. 2023
 Vmax = 120;                 % [m/s]
 h_l = 0.89;                 % Shaft spacing upper rotor - Su et al. 2023   
 h_u = h_l + 0.77;           % Shaft spacing lower rotor - Su et al. 2023
-hinge_offset_ratio = 0.01;
+hinge_offset_ratio = 0.04;
+% fictive_hinge_offset = 0.04;
 fictive_hinge_offset = 0.445;
 nu_b2 = 1 + 3/2*fictive_hinge_offset/(1-fictive_hinge_offset);
 m_bl = 50;
@@ -81,6 +82,7 @@ I_b = 1000;
 c_l_a_p = 5.7; C_l_p = 5.7;
 c_d_p = 0.19;
 omega_p = 207;  % 2300 rpm
+% R_p = 1.1;
 R_p = 1.4;
 r_p = 0:0.01:R_p;
 N_p = 6;
@@ -92,10 +94,12 @@ l_p = 7.66;     % x location
 h_p = 0;        % z location
 d_p = 0;        % y location
 twist_p = deg2rad(-30);
+k_u_pr = 0.9;
+k_l_pr = 0.9;
 
 
 % Horizontal Tail
-S_ht = 1.197;
+S_ht = 1.197*1.7;  % if for example its 3, the helicopter becomes stable!
 l_h = 6.8;
 C_l_ht = rad2deg(0.04);
 alfa_ht_0 = deg2rad(0);  % built-in horizontal tail incidence angle
@@ -105,14 +109,16 @@ S_e = 0.3 * S_ht;
 C_l_e = rad2deg(0.04);
 
 % Vertical Tail
-S_vt = 2*1.197;
+S_vt = 1.197/2.3;
+% S_vt = 2*2;
 l_v = 6.8;
 h_v = 0.5;
 C_l_vt = rad2deg(0.04);
 beta_vt_0 = deg2rad(0);  % built-in horizontal tail incidence angle
 
 % Rudder
-S_r = 0.3 * S_vt;
+S_r = 0.1 * S_vt;
+% S_r = 0.3 * S_vt;
 C_l_r = rad2deg(0.04);
 
 % Fuselage
@@ -120,6 +126,9 @@ Vol_fus = 12.2*pi*2^2;    % l*A cross section [circular]
 K_fus = 0.7;
 alfa_fus_m_0 = deg2rad(-1);
 
+
+% Control Allocation
+epsilon = 0.0000001; %small value
 
 
 

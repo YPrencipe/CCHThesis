@@ -4,7 +4,7 @@ clear;clc;close all;
 
 % Load Newest Trim States and Helicopter Parameters
 load('trim_saved.mat');load('qpitchhq1.mat');load('qpitchhq2.mat');
-load('TrimLinSave.mat'); load('V_transit_save.mat'); load('theta_ref');
+load('TrimLinSave.mat'); load('V_transit_save.mat'); load('ref_3211');
 load('t'); load('theta_cmd');
 coaxial_heli_parameters;
 
@@ -111,7 +111,6 @@ for i = 1:simN
     end
 
 
-
     % Control Allocation
     epsilon = 0.001;
     if V(i)<V_l_transit
@@ -174,17 +173,17 @@ save('theta_cmd', 'theta_cmd');
 save('t', 't');
 
 %% PLOTTING
-% figure(20)
-% subplot(3,1,1)
-% plot(t(1:end-1), rad2deg(U(2,1:end-1))); 
-% grid on; legend('LonCyc [deg]')
-% subplot(3,1,2)
-% plot(t, q); grid on; legend('q [rad/s]')
-% subplot(3,1,3)
-% plot(t, rad2deg(theta), 'LineWidth', 1.5); grid on;
-% hold on;
-% plot(t(1:end-1), rad2deg(theta_cmd), 'm:', 'LineWidth', 1.5); hold off;
-% legend('\theta_f [deg]')
+figure(20)
+subplot(3,1,1)
+plot(t(1:end-1), rad2deg(U(2,1:end-1))); 
+grid on; legend('LonCyc [deg]')
+subplot(3,1,2)
+plot(t, q); grid on; legend('q [rad/s]')
+subplot(3,1,3)
+plot(t, rad2deg(theta), 'LineWidth', 1.5); grid on;
+hold on;
+plot(t(1:end-1), rad2deg(theta_cmd), 'm:', 'LineWidth', 1.5); hold off;
+legend('\theta_f [deg]')
 
 figure(20)
 
@@ -251,8 +250,7 @@ disp(['Rise Time for \theta: ', num2str(rise_time_theta)]);
 disp(['Maximum Value for \theta: ', num2str(max_value_theta)]);
 disp(['Minimum Value after Rise Time for \theta: ', num2str(min_value_after_rise_theta)]);
 
-
-%% PLOT PITCH ATTITUDE QUICKNESS
+% %% PLOT PITCH ATTITUDE QUICKNESS
 Qpitch_5deg = max_q_value / (max_value_theta - theta(1))
 figure(21)
 plot(rad2deg(min_value_after_rise_theta), Qpitch_5deg, 'p', 'MarkerSize', 10)
@@ -291,10 +289,20 @@ M_theta_ss_C(1,2) = 3;
 M_theta_ss = ss(M_theta_ss_A, M_theta_ss_B, M_theta_ss_C, M_theta_ss_D);
 step(M_theta_ss); hold off;
 
+% PLOT EMF Control Parameters
+figure(71)
+plot(t(1:end-1), rad2deg(theta_ref), t(1:end-1), rad2deg(theta_cmd));
+grid on; legend('3-2-1-1 ref', '\theta_{cmd} model'); 
+ylabel('\theta [deg]'); xlabel('Time [s]');
 
 
-%% PLOT LONGITUDINAL PARAMETERS TIME SIMULATION
 
+
+
+
+%%
+% %% PLOT LONGITUDINAL PARAMETERS TIME SIMULATION
+% 
 % figure(21)
 %     subplot(4,1,1)
 %     plot(t(1:end-1), rad2deg(U(1,1:end-1)), t(1:end-1), rad2deg(U(2,1:end-1)), ...
@@ -334,20 +342,17 @@ step(M_theta_ss); hold off;
 %     legend('u [m/s]', 'w [m/s]')
 %     hold off;
 
-%% PLOT TIME HISTORY OF MOMENT COMPONENTS
-
+% %% PLOT TIME HISTORY OF MOMENT COMPONENTS
+% 
 % figure(22)
 % plot(t(1:end-1), M_components(1,:), t(1:end-1), M_components(2,:), ...
 %      t(1:end-1), M_components(3,:), t(1:end-1), M_components(4,:), ...
 %      t(1:end-1), M_components(5,:), t(1:end-1), M_components(6,:));
 % legend('M_{MR_u}', 'M_{MR_l}', 'M_{hinge}', 'M_{flap}', 'M_{fus}', 'M_{ht}')
-
-
+% 
+% 
 % close all;
 
-%% PLOT EMF Control Parameters
-figure(71)
-plot(t(1:end-1), rad2deg(theta_ref), t(1:end-1), rad2deg(theta_cmd))
 
 
 
